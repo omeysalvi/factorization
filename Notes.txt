@@ -1,0 +1,1 @@
+Add the possible optimization of factor not being greater than sqrt
