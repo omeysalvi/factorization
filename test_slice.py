@@ -1,47 +1,35 @@
-import time
-import math
-import numpy as np
 import pyopencl as cl
-
-#prime1 = 65839
-#prime2 = 66617
+import numpy as np
+import math
 
 prime1 = 9999925913
 prime2 = 9987284561
-
 semiprime = prime1 * prime2
 
-start_time = time.time()
-
 sample_range = 1000000
-r_value_walk_samples = 50000
-
-# Step 1: Precompute base nums using math module for speed
-print("Precomputing base numbers...")
 theta_step = (math.pi / 2) / sample_range
-base_nums = np.zeros(sample_range - 1, dtype=np.uint64)
 
-for i in range(1, sample_range):
+# Just slice around the known good index
+start_idx = 499500
+end_idx = 499700
+
+base_nums = []
+for i in range(start_idx, end_idx):
     theta = i * theta_step
     r_value = int(math.sqrt(2 * semiprime / math.sin(2 * theta)))
-    base_nums[i - 1] = int(r_value * math.cos(theta))
+    base_nums.append(int(r_value * math.cos(theta)))
 
-print(f"Precomputation finished in {time.time() - start_time:.2f} seconds.")
+base_nums = np.array(base_nums, dtype=np.uint64)
 
-# Step 2: Split semiprime into 16-bit chunks for OpenCL modulo
 chunks = []
 temp = semiprime
 for _ in range(5):
     chunks.append(temp & 0xFFFF)
     temp >>= 16
 
-# Step 3: OpenCL setup
-print("Setting up OpenCL...")
-# Use the first available OpenCL context automatically
 ctx = cl.create_some_context(interactive=False)
 queue = cl.CommandQueue(ctx)
 
-# Define the kernel
 kernel_code = """
 __kernel void find_factors(
     __global const ulong *base_nums,
@@ -56,10 +44,8 @@ __kernel void find_factors(
     int gid = get_global_id(0);
     ulong base_num = base_nums[gid];
     
-    // Once a factor is found, skip work
     if (*found_factor != 0) return;
 
-    // Check up walk_samples
     int steps = 0;
     int iters = 0;
     int max_iters = walk_samples * 10;
@@ -83,7 +69,6 @@ __kernel void find_factors(
         num++;
     }
     
-    // Check down walk_samples
     steps = 0;
     iters = 0;
     num = base_num;
@@ -110,39 +95,17 @@ __kernel void find_factors(
 """
 
 prg = cl.Program(ctx, kernel_code).build()
-
 mf = cl.mem_flags
 base_nums_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=base_nums)
-
-# The result buffer will hold a single 64-bit unsigned int
 found_factor_arr = np.zeros(1, dtype=np.uint64)
 found_factor_buf = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=found_factor_arr)
 
-# Step 4: Execute Kernel in batches to prevent TDR timeout
-print(f"Launching kernel in batches for {len(base_nums)} work items...")
-batch_size = 5000  # Reduced batch size to prevent computer crash/TDR timeout
-for offset in range(0, len(base_nums), batch_size):
-    current_batch_size = min(batch_size, len(base_nums) - offset)
-    
-    prg.find_factors(queue, (current_batch_size,), None,
-                     base_nums_buf,
-                     np.uint64(chunks[4]), np.uint64(chunks[3]),
-                     np.uint64(chunks[2]), np.uint64(chunks[1]), np.uint64(chunks[0]),
-                     np.int32(r_value_walk_samples),
-                     found_factor_buf,
-                     global_offset=(offset,))
-    
-    # Check result after each batch
-    cl.enqueue_copy(queue, found_factor_arr, found_factor_buf).wait()
-    if found_factor_arr[0] != 0:
-        print(f"Factor found in batch starting at offset {offset}!")
-        break
+prg.find_factors(queue, base_nums.shape, None,
+                 base_nums_buf,
+                 np.uint64(chunks[4]), np.uint64(chunks[3]),
+                 np.uint64(chunks[2]), np.uint64(chunks[1]), np.uint64(chunks[0]),
+                 np.int32(5000),
+                 found_factor_buf)
 
-factor1 = int(found_factor_arr[0])
-if factor1 != 0:
-    factor2 = semiprime // factor1
-    print(f"Found factors: ({factor1}, {factor2})")
-else:
-    print("No factors found.")
-
-print(f"Total time elapsed: {time.time() - start_time:.2f} seconds.")
+cl.enqueue_copy(queue, found_factor_arr, found_factor_buf).wait()
+print('Found factor slice:', found_factor_arr[0])
