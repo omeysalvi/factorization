@@ -1,18 +1,19 @@
 import time
 import sympy as sp
 
-#prime1 = 65839
-#prime2 = 66617
-
 prime1 = 9999925913
 prime2 = 9987284561
+
+prime2 = 97
+prime1 = 65839
+prime2 = 66617
 
 semiprime = prime1 * prime2
 
 start_time = time.time()
 
-sample_range = 1000000
-r_value_walk_samples = 5000
+sample_range = 1000
+r_value_walk_samples = 50
 r_values = {}
 theta_step = ((sp.pi/2)/sample_range).evalf()
 theta = 0
@@ -63,4 +64,7 @@ for theta, r_value in r_values.items():
     if found_factors:
         break
 
+end_time = time.time()
+
 print(found_factors)
+print(f"Time taken: {end_time - start_time:.6f} seconds")

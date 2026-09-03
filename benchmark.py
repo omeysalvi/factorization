@@ -15,7 +15,7 @@ semiprime_61 = 1606938044258990275541962093043441035048642082211966411156409
 #current problem: semiprime (rsa_100) takes too much time and semiprime_61 takes too little time
 
 start_time = time.time()
-factors = factorint(semiprime_70, verbose=True)
+factors = factorint(semiprime_61, verbose=True)
 end_time = time.time()
 
 print(f"Factors: {factors}")
