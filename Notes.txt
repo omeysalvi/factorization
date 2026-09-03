@@ -1,2 +1,11 @@
 Add the possible optimization of factor not being greater than sqrt
 I think the code can run on multiple cores at the same time to be parallelized
+
+
+Assumptions made:
+only two factors - both are prime
+both factors have approximately the same number of digits which is approximately half of number you are factoring
+
+further reading:
+rectangular hyperbola of type xy = c
+fermat's approximation

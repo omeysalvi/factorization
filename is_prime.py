@@ -5,13 +5,15 @@ rsa_100 = 1522605027922533360535618378132637429718068114961380688657908494580122
 rsa_100_f1 = 37975227936943673922808872755445627854565536638199
 rsa_100_f2 = 40094690950920881030683735292761468389214899724061
 
+rsa_250_1 = 64135289477071580278790190170577389084825014742943447208116859632024532344630238623598752668347708737661925585694639798853367
+
 def is_prime(n: int) -> bool:
     # sympy uses the Miller-Rabin test for large numbers, which is extremely fast
     return sympy.isprime(n)
 
 print("Starting primality test using sympy...")
 start_time = time.time()
-result = is_prime(rsa_100_f1)
+result = is_prime(rsa_250_1)
 elapsed = time.time() - start_time
 
 print(f"Is rsa_100_f1 prime? {result}")
