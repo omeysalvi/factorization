@@ -1,1 +1,2 @@
 Add the possible optimization of factor not being greater than sqrt
+I think the code can run on multiple cores at the same time to be parallelized

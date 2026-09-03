@@ -1,22 +1,24 @@
 import time
 import sympy as sp
 
-#prime1 = 9999925913
-#prime2 = 9987284561
+#prime1 = 65839
+#prime2 = 66617
 
-prime1 = 65839
-prime2 = 66617
+prime1 = 9999925913
+prime2 = 9987284561
 
 semiprime = prime1 * prime2
 
 start_time = time.time()
 
-sample_range = 10000 #one million samples
-r_value_walk_samples = 500 #10,000 walks
+sample_range = 1000000
+r_value_walk_samples = 5000
 r_values = {}
+theta_step = ((sp.pi/2)/sample_range).evalf()
+theta = 0
 
 for i in range(1, sample_range):
-    theta = ((sp.pi/2)/i).evalf()
+    theta += theta_step 
     r_values[theta] = int(sp.sqrt(2*semiprime/(sp.sin(2*theta))).evalf())
 
 found_factors = None
