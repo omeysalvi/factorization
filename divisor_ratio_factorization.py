@@ -129,13 +129,16 @@ if __name__ == '__main__':
     # beta = tan(theta) => theta = atan(2.2558) = 66.08 degrees.
     # Offset from 45 is ~21 degrees. 
     # Test with N = 4171, and an angle offset of 25 degrees.
-    factorize_by_beta(4171, angle_offset_degrees=25.0, calculable_range=100, sieve_limit=50)
+    #factorize_by_beta(4171, angle_offset_degrees=25.0, calculable_range=100, sieve_limit=50)
 
     # Test case 2: User's params (offset=5) for a larger number where beta is very close to 1
     # Let's say p=1013, q=1019, N=1032247
     # beta = 1019/1013 = 1.0059 (very close to 1, offset < 1 degree)
-    print("\n--- Testing with user params ---")
-    factorize_by_beta(1032247, angle_offset_degrees=5.0, calculable_range=1_000_000, sieve_limit=1000)
+    #print("\n--- Testing with user params ---")
+    #factorize_by_beta(1032247, angle_offset_degrees=5.0, calculable_range=1_000_000, sieve_limit=1000)
+
+    #print("\n-----Testing new data-----")
+    #factorize_by_beta(4385996663, angle_offset_degrees=1.0, calculable_range=1_000_000, sieve_limit=1000)
 
     print("\n-----Testing new data-----")
-    factorize_by_beta(4385996663, angle_offset_degrees=1.0, calculable_range=1_000_000, sieve_limit=1000)
+    factorize_by_beta(99872105682048729193, angle_offset_degrees=1.0, calculable_range=1_000_000_000_000_000, sieve_limit=1000)

@@ -14,3 +14,15 @@ p = 2211282552952966643528108525502623092761208950247001539441374831912882294140
 big_num = int(math.sqrt(p))
 
 print(big_num)
+
+prime1 = 9999925913
+prime2 = 9987284561
+
+print (prime1 * prime2)
+
+prime1 = 65839
+prime2 = 66617
+
+print (prime1 * prime2)
+
+

@@ -3,11 +3,12 @@ import sympy as sp
 
 prime1 = 9999925913
 prime2 = 9987284561
+semiprime = 99872105682048729193
 
-prime1 = 65839
-prime2 = 66617
+prime_small_1 = 65839
+prime_small_2 = 66617
+semiprime_small = 4385996663
 
-semiprime = prime1 * prime2
 semiprime_root = sp.sqrt(semiprime)
 
 start_time = time.time()
