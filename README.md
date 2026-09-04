@@ -1,2 +1,0 @@
-# factorization
-factorize large numbers

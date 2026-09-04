@@ -1,3 +1,4 @@
+import time
 import math
 import sys
 import decimal
@@ -118,14 +119,23 @@ if __name__ == '__main__':
     # alpha = 2 corresponds to offset = atan(2) - 45 = ~18.435 degrees
     # Actually, we can just pass the equivalent offset. Or pass alpha directly.
     # We'll use offset that yields alpha = 2.0. tan(45 + offset) = 2 => offset = atan(2) - 45
-    offset_alpha2 = math.degrees(math.atan(2.0)) - 45.0
-    print("--- Example 1: N=1333, alpha=2.0 ---")
-    factorize_by_beta(1333, angle_offset_degrees=offset_alpha2, calculable_range=10, sieve_limit=10)
+    #offset_alpha2 = math.degrees(math.atan(2.0)) - 45.0
+    #print("--- Example 1: N=1333, alpha=2.0 ---")
+    #factorize_by_beta(1333, angle_offset_degrees=offset_alpha2, calculable_range=10, sieve_limit=10)
 
     # Test case 2: N = 4171 (Example 2 from paper)
-    print("\n--- Example 2: N=4171, alpha=2.0 ---")
-    factorize_by_beta(4171, angle_offset_degrees=offset_alpha2, calculable_range=10, sieve_limit=10)
+    #print("\n--- Example 2: N=4171, alpha=2.0 ---")
+    #factorize_by_beta(4171, angle_offset_degrees=offset_alpha2, calculable_range=10, sieve_limit=10)
 
     # Test case 3: 60-digit number
-    print("\n--- 60-digit number ---")
-    factorize_by_beta(1606938044258990275541962093043441035048642082211966411156409, angle_offset_degrees=1.0, calculable_range=1_000_000, sieve_limit=100000)
+    #print("\n--- 60-digit number ---")
+    #start_time = time.time()
+    #factorize_by_beta(1606938044258990275541962093043441035048642082211966411156409, angle_offset_degrees=1.0, calculable_range=1_000_000, sieve_limit=100000)
+    #end_time = time.time()
+
+    print("\n--- 70-digit number ---")
+    start_time = time.time()
+    factorize_by_beta(8211485197231531569523737489341351104246108693889407026968257302824741, angle_offset_degrees=5.0, calculable_range=1_000_000, sieve_limit=100000)
+    end_time = time.time()
+
+    print(f"Time taken: {end_time - start_time:.6f} seconds")
