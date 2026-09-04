@@ -56,23 +56,29 @@ def factorize_by_beta(N, angle_offset_degrees=5.0, calculable_range=1_000_000, s
     decimal.getcontext().prec = 200
     N_dec = decimal.Decimal(N)
     
-    # The paper's algorithm exclusively searches beta >= 1 (i.e. p <= q). 
-    # Your bidirectional angle offset mathematically translates to an upper bound for the divisor ratio (alpha).
-    alpha = math.tan(math.radians(45.0 + abs(angle_offset_degrees)))
+    # The hyperbola xy=N is symmetric. x < sqrt(N) corresponds to beta > 1.
+    # Searching one direction (beta >= 1) automatically covers the other.
+    alpha_float = math.tan(math.radians(45.0 + abs(angle_offset_degrees)))
+    alpha = decimal.Decimal(str(alpha_float))
     
     print(f"Factoring {N}...")
-    print(f"Assumed max beta (alpha): {alpha:.4f}")
+    print(f"Assumed max beta (alpha): {alpha_float:.4f}")
     print(f"Calculable range (M_permissive): {calculable_range}")
     print(f"Sieve limit: {sieve_limit}")
     
-    # Step 2: Calculate k (the required geometric splitting depth)
-    num = math.log(alpha)
-    term = (math.sqrt(alpha) / math.sqrt(1.0 + alpha**2)) * (calculable_range / math.sqrt(float(N)))
+    # Calculate global depth K
+    num = math.log(alpha_float)
+    term = (math.sqrt(alpha_float) / math.sqrt(1.0 + alpha_float**2)) * (calculable_range / math.sqrt(float(N)))
     denom = math.log1p(term)
-    k = math.floor(math.log2(num / denom))
-    k = max(1, k) # Ensure at least 1
+    k_global = math.floor(math.log2(num / denom)) if denom > 0 else 1
+    k_global = max(1, k_global)
     
-    print(f"Calculated depth k: {k}")
+    print(f"Calculated target depth K: {k_global}")
+    
+    # Proposition 3 Second Value: V = alpha ^ ((2^k - 1) / 2^k)
+    power = decimal.Decimal(2**k_global - 1) / decimal.Decimal(2**k_global)
+    second_value = alpha ** power
+    print(f"Proposition 3 'second value' (V): {second_value:.6f}")
     
     # Pre-calculate primes for sieving
     primes = []
@@ -83,34 +89,45 @@ def factorize_by_beta(N, angle_offset_degrees=5.0, calculable_range=1_000_000, s
             for i in range(p * p, sieve_limit + 1, p):
                 is_prime[i] = False
                 
-    total_iterations = 2**(k - 1)
-    progress = ProgressTracker(total_iterations)
-    
-    alpha_dec = decimal.Decimal(str(alpha))
-    pow2k = decimal.Decimal(2**k)
-    
-    # Step 3: Loop j from 1 to 2^(k-1)
     N_int = int(N)
-    for j in range(1, total_iterations + 1):
-        # Calculate boundaries for chunk j
-        pow_prev = decimal.Decimal(j - 1) / pow2k
-        pow_curr = decimal.Decimal(j) / pow2k
+    
+    # Stack for DFS binary search: stores (beta_min, beta_max)
+    stack = [(decimal.Decimal(1.0), alpha)]
+    
+    intervals_sieved = 0
+    intervals_pruned = 0
+    
+    while stack:
+        b_min, b_max = stack.pop()
         
-        # x_start is Q_{j-1}.x (which is larger) and x_end is Q_j.x (which is smaller)
-        x_max = N_dec.sqrt() / (alpha_dec ** pow_prev)
-        x_min = N_dec.sqrt() / (alpha_dec ** pow_curr)
+        # Check pruning condition (Proposition 3)
+        # "remove ranges over which it is greater than the second value"
+        if b_min > second_value:
+            intervals_pruned += 1
+            continue
+            
+        x_max = N_dec.sqrt() / b_min.sqrt()
+        x_min = N_dec.sqrt() / b_max.sqrt()
         
-        candidates = sieve_interval(x_min, x_max, primes)
-        
-        for c in candidates:
-            if N_int % c == 0:
-                print() # Ensure a newline after progress output
-                print(f"Found factors: {c} and {N_int // c}")
-                return (c, N_int // c)
-                
-        progress.update(1)
-        
-    print() # Ensure a newline after progress output
+        if (x_max - x_min) <= calculable_range:
+            # Sieve
+            candidates = sieve_interval(x_min, x_max, primes)
+            intervals_sieved += 1
+            sys.stdout.write(f"\rSieved intervals: {intervals_sieved} | Pruned arcs: {intervals_pruned}")
+            sys.stdout.flush()
+            
+            for c in candidates:
+                if N_int % c == 0:
+                    print(f"\n\nFound factors: {c} and {N_int // c}")
+                    return (c, N_int // c)
+        else:
+            # Split the arc geometrically and push to stack
+            b_mid = (b_min * b_max).sqrt()
+            # Push right half first so left half (smaller betas, closer to center) is popped and processed first
+            stack.append((b_mid, b_max))
+            stack.append((b_min, b_mid))
+            
+    print(f"\n\nSearch complete. Total Sieved: {intervals_sieved}, Total Pruned: {intervals_pruned}")
     print("No factors found in the assumed range.")
     return None
 
